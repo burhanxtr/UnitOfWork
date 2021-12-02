@@ -4,7 +4,7 @@ A plugin for Microsoft.EntityFrameworkCore to support repository, unit of work p
 
 ## Support MySQL multiple databases/tables sharding
 
-> In MySQL, physically, a schema is synonymous with a database. You can substitute the keyword SCHEMA instead of DATABASE in MySQL SQL syntax, for example using CREATE SCHEMA instead of CREATE DATABASE. Some other database products draw a distinction. For example, in the Oracle Database product, a schema represents only a part of a database: the tables and other objects owned by a single user.
+> In MySQL, physically, a schema is synonymous with a database. You can substitute the keyword SCHEMA instead of DATABASE in MySQL SQL syntax, for example using CREATE SCHEMA instead of CREATE DATABASE. Some other database products draw a distinction. For example, in the Oracle Database product, a schema represents only a part of a database: the tables and other objects owned by a single user..
 
 So, for MySQL, the easy way to support this feature is to dynamically change the SCHEMA at the runtime.
 
