@@ -104,6 +104,55 @@ namespace Arch.EntityFrameworkCore.UnitOfWork
                 return query;
             }
         }
+
+        /// <summary>
+        /// Gets all entities. This method is not recommended
+        /// </summary>
+        /// <param name="selector">The selector for projection.</param>
+        /// <param name="predicate">A function to test each element for a condition.</param>
+        /// <param name="orderBy">A function to order elements.</param>
+        /// <param name="include">A function to include navigation properties</param>
+        /// <param name="disableTracking"><c>true</c> to disable changing tracking; otherwise, <c>false</c>. Default to <c>true</c>.</param>
+        /// <param name="ignoreQueryFilters">Ignore query filters</param>
+        /// <returns>An <see cref="IPagedList{TEntity}"/> that contains elements that satisfy the condition specified by <paramref name="predicate"/>.</returns>
+        /// <remarks>Ex: This method defaults to a read-only, no-tracking query.</remarks>
+        public IQueryable<TResult> GetAll<TResult>(Expression<Func<TEntity,TResult>> selector,
+            Expression<Func<TEntity, bool>> predicate = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null, bool disableTracking = true, bool ignoreQueryFilters = false)
+        {
+            IQueryable<TEntity> query = _dbSet;
+
+            if (disableTracking)
+            {
+                query = query.AsNoTracking();
+            }
+
+            if (include != null)
+            {
+                query = include(query);
+            }
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            if (ignoreQueryFilters)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+
+            if (orderBy != null)
+            {
+                return orderBy(query).Select(selector);
+            }
+            else
+            {
+                return query.Select(selector);
+            }
+        }
+
         /// <summary>
         /// Gets the <see cref="IPagedList{TEntity}"/> based on a predicate, orderby delegate and page information. This method default no-tracking query.
         /// </summary>
@@ -551,6 +600,169 @@ namespace Arch.EntityFrameworkCore.UnitOfWork
         }
 
         /// <summary>
+        /// Gets async the count based on a predicate.
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate = null)
+        {
+            if (predicate == null)
+            {
+                return await _dbSet.CountAsync();
+            }
+            else
+            {
+                return await _dbSet.CountAsync(predicate);
+            }
+        }
+
+        /// <summary>
+        /// Gets the long count based on a predicate.
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public virtual long LongCount(Expression<Func<TEntity, bool>> predicate = null)
+        {
+            if (predicate == null)
+            {
+                return _dbSet.LongCount();
+            }
+            else
+            {
+                return _dbSet.LongCount(predicate);
+            }
+        }
+
+        /// <summary>
+        /// Gets async the long count based on a predicate.
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public virtual async Task<long> LongCountAsync(Expression<Func<TEntity, bool>> predicate = null)
+        {
+            if (predicate == null)
+            {
+                return await _dbSet.LongCountAsync();
+            }
+            else
+            {
+                return await _dbSet.LongCountAsync(predicate);
+            }
+        }
+
+        /// <summary>
+        /// Gets the max based on a predicate.
+        /// </summary>
+        /// <param name="predicate"></param>
+        ///  /// <param name="selector"></param>
+        /// <returns>decimal</returns>
+        public virtual T Max<T>(Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, T>> selector = null)
+        {
+            if (predicate == null)
+                return _dbSet.Max(selector);
+            else
+                return _dbSet.Where(predicate).Max(selector);
+        }
+
+        /// <summary>
+        /// Gets the async max based on a predicate.
+        /// </summary>
+        /// <param name="predicate"></param>
+        ///  /// <param name="selector"></param>
+        /// <returns>decimal</returns>
+        public virtual async Task<T> MaxAsync<T>(Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, T>> selector = null)
+        {
+            if (predicate == null)
+                return await _dbSet.MaxAsync(selector);
+            else
+                return await _dbSet.Where(predicate).MaxAsync(selector);
+        }
+
+        /// <summary>
+        /// Gets the min based on a predicate.
+        /// </summary>
+        /// <param name="predicate"></param>
+        ///  /// <param name="selector"></param>
+        /// <returns>decimal</returns>
+        public virtual T Min<T>(Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, T>> selector = null)
+        {
+            if (predicate == null)
+                return _dbSet.Min(selector);
+            else
+                return _dbSet.Where(predicate).Min(selector);
+        }
+
+        /// <summary>
+        /// Gets the async min based on a predicate.
+        /// </summary>
+        /// <param name="predicate"></param>
+        ///  /// <param name="selector"></param>
+        /// <returns>decimal</returns>
+        public virtual async Task<T> MinAsync<T>(Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, T>> selector = null)
+        {
+            if (predicate == null)
+                return await _dbSet.MinAsync(selector);
+            else
+                return await _dbSet.Where(predicate).MinAsync(selector);
+        }
+
+        /// <summary>
+        /// Gets the average based on a predicate.
+        /// </summary>
+        /// <param name="predicate"></param>
+        ///  /// <param name="selector"></param>
+        /// <returns>decimal</returns>
+        public virtual decimal Average(Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, decimal>> selector = null)
+        {
+            if (predicate == null)
+                return _dbSet.Average(selector);
+            else
+                return _dbSet.Where(predicate).Average(selector);
+        }
+
+        /// <summary>
+        /// Gets the async average based on a predicate.
+        /// </summary>
+        /// <param name="predicate"></param>
+        ///  /// <param name="selector"></param>
+        /// <returns>decimal</returns>
+        public virtual async Task<decimal> AverageAsync(Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, decimal>> selector = null)
+        {
+            if (predicate == null)
+                return await _dbSet.AverageAsync(selector);
+            else
+                return await _dbSet.Where(predicate).AverageAsync(selector);
+        }
+
+        /// <summary>
+        /// Gets the sum based on a predicate.
+        /// </summary>
+        /// <param name="predicate"></param>
+        ///  /// <param name="selector"></param>
+        /// <returns>decimal</returns>
+        public virtual decimal Sum(Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, decimal>> selector = null)
+        {
+            if (predicate == null)
+                return _dbSet.Sum(selector);
+            else
+                return _dbSet.Where(predicate).Sum(selector);
+        }
+
+        /// <summary>
+        /// Gets the async sum based on a predicate.
+        /// </summary>
+        /// <param name="predicate"></param>
+        ///  /// <param name="selector"></param>
+        /// <returns>decimal</returns>
+        public virtual async Task<decimal> SumAsync(Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, decimal>> selector = null)
+        {
+            if (predicate == null)
+                return await _dbSet.SumAsync(selector);
+            else
+                return await _dbSet.Where(predicate).SumAsync(selector);
+        }
+
+        /// <summary>
         /// Gets the exists based on a predicate.
         /// </summary>
         /// <param name="selector"></param>
@@ -764,6 +976,66 @@ namespace Arch.EntityFrameworkCore.UnitOfWork
             {
                 return await query.ToListAsync();
             }
+        }
+
+        /// <summary>
+        /// Gets all entities. This method is not recommended
+        /// </summary>
+        /// <param name="selector">The selector for projection.</param>
+        /// <param name="predicate">A function to test each element for a condition.</param>
+        /// <param name="orderBy">A function to order elements.</param>
+        /// <param name="include">A function to include navigation properties</param>
+        /// <param name="disableTracking"><c>true</c> to disable changing tracking; otherwise, <c>false</c>. Default to <c>true</c>.</param>
+        /// <param name="ignoreQueryFilters">Ignore query filters</param>
+        /// <returns>An <see cref="IPagedList{TEntity}"/> that contains elements that satisfy the condition specified by <paramref name="predicate"/>.</returns>
+        /// <remarks>Ex: This method defaults to a read-only, no-tracking query.</remarks>
+        public async Task<IList<TResult>> GetAllAsync<TResult>(Expression<Func<TEntity,TResult>> selector,
+            Expression<Func<TEntity, bool>> predicate = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
+            bool disableTracking = true, bool ignoreQueryFilters = false)
+        {
+            IQueryable<TEntity> query = _dbSet;
+
+            if (disableTracking)
+            {
+                query = query.AsNoTracking();
+            }
+
+            if (include != null)
+            {
+                query = include(query);
+            }
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            if (ignoreQueryFilters)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+
+            
+            if (orderBy != null)
+            {
+                return await orderBy(query).Select(selector).ToListAsync();
+            }
+            else
+            {
+                return await query.Select(selector).ToListAsync();
+            }
+        }
+
+        /// <summary>
+        /// Change entity state for patch method on web api.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// /// <param name="state">The entity state.</param>
+        public void ChangeEntityState(TEntity entity, EntityState state)
+        {
+            _dbContext.Entry(entity).State = state;
         }
     }
 }
